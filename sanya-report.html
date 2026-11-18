@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>三亚大悦城中俄双语文书语料调研</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --sea:#15C1D8;
+    --sea-deep:#008CAA;
+    --sun:#FFB047;
+    --coral:#FF7A59;
+    --leaf:#34D399;
+    --ink:#1F2937;
+    --muted:#64748B;
+    --bg:#F7FBFF;
+    --card:#FFFFFF;
+  }
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    overflow-x:hidden;
+  }
+
+  /* 顶部导航 */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.85);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(21,193,216,.12);
+  }
+  .topbar-inner{
+    max-width:1200px;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 24px;gap:16px;
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    font-weight:800;font-size:18px;color:var(--sea-deep);
+  }
+  .brand-mark{
+    width:34px;height:34px;border-radius:12px;
+    background:conic-gradient(from 210deg,#15C1D8,#FFB047,#FF7A59,#15C1D8);
+    box-shadow:0 8px 24px rgba(21,193,216,.35);
+  }
+  .nav{display:flex;gap:8px;flex-wrap:wrap}
+  .nav button{
+    border:none;background:transparent;color:var(--ink);
+    padding:9px 14px;border-radius:999px;font-size:14px;cursor:pointer;
+    transition:.3s ease;position:relative;
+  }
+  .nav button:hover{background:#E8F6FB;color:var(--sea-deep)}
+  .nav button.active{
+    background:linear-gradient(135deg,#15C1D8,#008CAA);
+    color:#fff;box-shadow:0 10px 24px rgba(21,193,216,.35);
+  }
+
+  /* 进度条 */
+  .stage{
+    height:6px;background:#E8F4FA;
+    position:sticky;top:64px;z-index:49;
+  }
+  .stage-fill{
+    height:100%;width:0;
+    background:linear-gradient(90deg,#15C1D8,#FFB047,#FF7A59);
+    background-size:200% 100%;
+    animation:shimmer 4s linear infinite;
+    transition:width .6s cubic-bezier(.2,.9,.2,1);
+  }
+  @keyframes shimmer{
+    0%{background-position:0 0}100%{background-position:-200% 0}
+  }
+
+  /* 场景页 */
+  .scene{
+    display:none;animation:sceneIn .7s cubic-bezier(.2,.9,.2,1) both;
+  }
+  .scene.active{display:block}
+  @keyframes sceneIn{
+    from{opacity:0;transform:translateY(40px) scale(.98)}
+    to{opacity:1;transform:none}
+  }
+
+  /* 首屏 */
+  .hero{
+    position:relative;padding:72px 24px 88px;overflow:hidden;
+    background:
+      radial-gradient(1200px 520px at 85% -10%, rgba(255,176,71,.35), transparent 60%),
+      radial-gradient(900px 460px at 10% 10%, rgba(21,193,216,.45), transparent 60%),
+      linear-gradient(180deg,#EAF8FF 0%,#F7FBFF 100%);
+  }
+  .hero-wrap{max-width:1200px;margin:0 auto;position:relative;z-index:2}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:8px 14px;border-radius:999px;background:#fff;
+    color:var(--sea-deep);font-size:13px;font-weight:700;
+    box-shadow:0 10px 30px rgba(21,193,216,.18);
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--sea);box-shadow:0 0 0 0 rgba(21,193,216,.6);animation:pulse 1.6s infinite}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(21,193,216,.5)}
+    70%{box-shadow:0 0 0 14px rgba(21,193,216,0)}
+    100%{box-shadow:0 0 0 0 rgba(21,193,216,0)}
+  }
+  .hero h1{
+    margin-top:22px;font-size:clamp(34px,4.6vw,56px);line-height:1.12;letter-spacing:-1px;
+  }
+  .hero h1 em{
+    font-style:normal;background:linear-gradient(135deg,#15C1D8,#FF7A59);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p.lead{
+    margin-top:18px;font-size:18px;color:var(--muted);max-width:720px;line-height:1.7;
+  }
+  .meta-pills{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+  .meta-pills span{
+    padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.85);
+    font-size:14px;color:var(--ink);box-shadow:0 10px 24px rgba(17,24,39,.06);
+  }
+  .meta-pills b{color:var(--sea-deep);margin-right:6px}
+
+  /* 浮动装饰 */
+  .blob{position:absolute;border-radius:50%;filter:blur(40px);z-index:0}
+  .blob.b1{width:320px;height:320px;background:#9CE7F5;top:-80px;right:-80px}
+  .blob.b2{width:260px;height:260px;background:#FFD9A8;bottom:-100px;left:-60px}
+  .blob.b3{width:200px;height:200px;background:#FFC1B3;top:40%;right:10%}
+
+  /* 统计卡片区 */
+  .stats{
+    max-width:1200px;margin:40px auto 0;display:grid;
+    grid-template-columns:repeat(4,1fr);gap:16px;position:relative;z-index:2;
+  }
+  .stat{
+    position:relative;padding:22px;border-radius:24px;background:#fff;overflow:hidden;
+    box-shadow:0 20px 40px rgba(17,24,39,.06);
+    transform:translateY(20px);opacity:0;animation:statIn .6s forwards;
+  }
+  .stat:nth-child(1){animation-delay:.15s}
+  .stat:nth-child(2){animation-delay:.28s}
+  .stat:nth-child(3){animation-delay:.41s}
+  .stat:nth-child(4){animation-delay:.54s}
+  @keyframes statIn{to{opacity:1;transform:none}}
+  .stat .ico{
+    width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    font-size:22px;margin-bottom:14px;
+  }
+  .stat .num{font-size:34px;font-weight:800;color:var(--sea-deep);letter-spacing:-1px}
+  .stat .lbl{margin-top:4px;color:var(--muted);font-size:14px}
+  .stat .bar{height:6px;border-radius:6px;background:#E8F4FA;margin-top:14px;overflow:hidden}
+  .stat .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#15C1D8,#FFB047);animation:barFill 1s .8s forwards}
+  @keyframes barFill{to{width:var(--w,40%)}}
+
+  /* 通用容器 */
+  .wrap{max-width:1200px;margin:0 auto;padding:56px 24px}
+  .sec-title{
+    display:flex;align-items:baseline;gap:14px;margin-bottom:10px;
+    font-size:clamp(24px,3vw,34px);
+  }
+  .sec-title .num{
+    width:42px;height:42px;border-radius:14px;flex:none;
+    background:linear-gradient(135deg,#15C1D8,#008CAA);
+    color:#fff;display:grid;place-items:center;font-weight:800;
+    box-shadow:0 16px 34px rgba(21,193,216,.35);
+  }
+  .sec-sub{color:var(--muted);margin-bottom:28px;font-size:16px}
+
+  /* 数据总览：仪表盘卡片 */
+  .panels{display:grid;grid-template-columns:1.2fr .8fr;gap:20px}
+  .panel{
+    background:#fff;border-radius:28px;padding:24px;box-shadow:0 20px 40px rgba(17,24,39,.06);
+    position:relative;overflow:hidden;
+  }
+  .panel h3{margin-bottom:16px;font-size:18px}
+  .mini-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .mini{
+    padding:16px;border-radius:20px;background:linear-gradient(180deg,#F0FCFF,#fff);
+    border:1px solid #E0F4FB;
+  }
+  .mini .k{color:var(--muted);font-size:13px}
+  .mini .v{font-size:22px;font-weight:800;color:var(--sea-deep);margin-top:6px}
+  .ring{
+    width:100%;max-width:260px;margin:10px auto 0;aspect-ratio:1;border-radius:50%;
+    background:conic-gradient(var(--sea) 0 var(--p,60%), #E8F4FA var(--p,60%) 100%);
+    display:grid;place-items:center;
+  }
+  .ring-inner{width:72%;height:72%;border-radius:50%;background:#fff;display:grid;place-items:center}
+  .ring-inner b{font-size:30px;color:var(--sea-deep)}
+  .ring-inner span{font-size:13px;color:var(--muted)}
+
+  /* 进度条组 */
+  .bars{display:grid;gap:14px}
+  .row{
+    display:grid;grid-template-columns:140px 1fr 80px;align-items:center;gap:14px;
+    padding:14px;border-radius:20px;background:#fff;box-shadow:0 14px 34px rgba(17,24,39,.05);
+  }
+  .row .tag{font-weight:700;color:var(--sea-deep)}
+  .track{height:14px;border-radius:999px;background:#E8F4FA;overflow:hidden}
+  .fill{
+    height:100%;background:linear-gradient(90deg,#15C1D8,#FFB047,#FF7A59);
+    width:0;transition:width 1s cubic-bezier(.2,.9,.2,1);
+  }
+
+  /* 研究发现：大卡片 */
+  .findings{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  .fcard{
+    position:relative;border-radius:28px;overflow:hidden;background:#fff;
+    box-shadow:0 20px 40px rgba(17,24,39,.08);cursor:pointer;
+    transition:.5s cubic-bezier(.2,.9,.2,1);
+  }
+  .fcard:hover{transform:translateY(-10px);box-shadow:0 30px 60px rgba(21,193,216,.25)}
+  .fcard .cover{
+    height:200px;position:relative;overflow:hidden;background:#E8F4FA;
+  }
+  .fcard .cover img{width:100%;height:100%;object-fit:cover;transition:.6s ease}
+  .fcard:hover .cover img{transform:scale(1.08)}
+  .fcard .cover .badge{
+    position:absolute;left:16px;top:16px;padding:8px 12px;border-radius:999px;background:#fff;
+    font-size:12px;font-weight:800;color:var(--sea-deep);
+  }
+  .fcard .body{padding:20px}
+  .fcard h4{font-size:20px;margin-bottom:10px}
+  .fcard p{color:var(--muted);font-size:14px;line-height:1.7}
+  .chip{
+    display:inline-block;padding:6px 10px;border-radius:999px;background:#E8F4FA;color:var(--sea-deep);
+    font-size:12px;margin-top:12px;font-weight:700;
+  }
+
+  /* 语料库 */
+  .filter-row{
+    display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;
+  }
+  .filter-row button{
+    border:none;padding:10px 14px;border-radius:999px;background:#fff;color:var(--ink);
+    box-shadow:0 10px 24px rgba(17,24,39,.05);cursor:pointer;font-size:14px;
+    transition:.3s ease;
+  }
+  .filter-row button.active{background:linear-gradient(135deg,#15C1D8,#008CAA);color:#fff}
+  .corpus{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .ccard{
+    position:relative;border-radius:24px;overflow:hidden;background:#fff;
+    box-shadow:0 16px 34px rgba(17,24,39,.06);cursor:pointer;
+    transition:.4s ease;
+  }
+  .ccard.hide{opacity:0;transform:scale(.85);position:absolute;pointer-events:none}
+  .ccard .ph{
+    aspect-ratio:4/3;background:#E8F4FA;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted)
+  }
+  .ccard .ph img{width:100%;height:100%;object-fit:cover;transition:.5s}
+  .ccard:hover .ph img{transform:scale(1.06)}
+  .ccard .meta{padding:14px}
+  .ccard .row2{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+  .lang{font-size:12px;color:var(--sea-deep);font-weight:800}
+
+  /* 优化示例 */
+  .ba{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  .ba-col{border-radius:28px;overflow:hidden;background:#fff;box-shadow:0 20px 40px rgba(17,24,39,.08)}
+  .ba-col .pic{aspect-ratio:16/10;background:#E8F4FA;overflow:hidden}
+  .ba-col .pic img{width:100%;height:100%;object-fit:cover}
+  .ba-col .txt{padding:20px}
+  .ba-col h4{margin-bottom:8px}
+  .ba-col p{color:var(--muted);font-size:14px}
+  .ba-col ul{margin-top:10px;display:grid;gap:6px;padding-left:18px}
+  .nav-row{display:flex;justify-content:center;gap:14px;margin-top:24px}
+  .nav-row button{
+    border:none;padding:12px 18px;border-radius:14px;background:#fff;color:var(--sea-deep);
+    box-shadow:0 14px 34px rgba(17,24,39,.06);cursor:pointer;font-weight:800;
+  }
+
+  /* 方法 */
+  .method{
+    background:linear-gradient(135deg,#EAF8FF,#FFF3E0);border-radius:30px;padding:30px;
+    box-shadow:0 20px 40px rgba(17,24,39,.06);
+  }
+  .method h3{margin-bottom:12px}
+  .method p{color:var(--muted);line-height:1.8}
+
+  footer{padding:40px 24px;color:var(--muted);font-size:14px;text-align:center}
+
+  /* 弹窗 */
+  dialog{
+    border:none;border-radius:28px;max-width:760px;width:calc(100% - 32px);padding:0;
+    box-shadow:0 30px 80px rgba(17,24,39,.25);
+    animation:zoomIn .4s cubic-bezier(.2,.9,.2,1) both;
+  }
+  @keyframes zoomIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+  dialog::backdrop{background:rgba(15,23,42,.55);backdrop-filter:blur(6px)}
+  .dialog-body{padding:24px}
+  .dialog-img{
+    width:100%;aspect-ratio:16/9;background:#E8F4FA;border-radius:20px;overflow:hidden;margin-bottom:18px
+  }
+  .dialog-img img{width:100%;height:100%;object-fit:contain}
+  .info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+  .info-grid div{padding:12px;border-radius:16px;background:#F4FAFF}
+  .info-grid b{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}
+  .close{
+    margin-top:16px;border:none;padding:12px 16px;border-radius:14px;background:linear-gradient(135deg,#15C1D8,#008CAA);color:#fff;cursor:pointer
+  }
+
+  @media (max-width:900px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .panels{grid-template-columns:1fr}
+    .findings{grid-template-columns:1fr}
+    .corpus{grid-template-columns:repeat(2,1fr)}
+    .ba{grid-template-columns:1fr}
+    .info-grid{grid-template-columns:1fr}
+  }
+  @media (max-width:560px){
+    .stats{grid-template-columns:1fr}
+    .corpus{grid-template-columns:1fr}
+    .row{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span>三亚大悦城 · 双语语料图鉴</span>
+    </div>
+    <div class="nav">
+      <button class="active" data-scene="hero">概览</button>
+      <button data-scene="overview">数据总览</button>
+      <button data-scene="findings">研究发现</button>
+      <button data-scene="corpus">语料库</button>
+      <button data-scene="ba">优化示例</button>
+      <button data-scene="method">方法</button>
+    </div>
+  </div>
+</div>
+
+<div class="stage"><div class="stage-fill" id="stageFill"></div></div>
+
+<!-- 概览 -->
+<section class="scene active" id="hero">
+  <div class="hero">
+    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+    <div class="hero-wrap">
+      <span class="eyebrow"><span class="dot"></span> 三亚大悦城 · 文本文书类双语调查</span>
+      <h1>我们在商场里，寻找<span>中俄双语</span>的可达边界</h1>
+      <p class="lead">通过海报告示、消费小票、便民提示和商品文书，观察俄语信息在三亚大悦城商业场景中的真实覆盖程度。</p>
+      <div class="meta-pills">
+        <span><b>地点</b>三亚大悦城</span>
+        <span><b>对象</b>文本文书类标识</span>
+        <span><b>目标</b>中俄双语普及现状</span>
+        <span><b>方法</b>实地采集 + 语料分析</span>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <div class="ico" style="background:#E8F8FF;color:#008CAA">📦</div>
+        <div class="num" id="statTotal">0</div>
+        <div class="lbl">文书类语料总数</div>
+        <div class="bar"><i style="--w:100%"></i></div>
+      </div>
+      <div class="stat">
+        <div class="ico" style="background:#FFF1E0;color:#FF7A59">🇷🇺</div>
+        <div class="num" id="statRu">0</div>
+        <div class="lbl">含俄语译文样本</div>
+        <div class="bar"><i style="--w:62%"></i></div>
+      </div>
+      <div class="stat">
+        <div class="ico" style="background:#E6FFFA;color:#0F766E">🏷️</div>
+        <div class="num" id="statType">4</div>
+        <div class="lbl">文书子类数量</div>
+        <div class="bar"><i style="--w:80%"></i></div>
+      </div>
+      <div class="stat">
+        <div class="ico" style="background:#FCE7F3;color:#BE185D">🧾</div>
+        <div class="num" id="statFindings">0</div>
+        <div class="lbl">核心发现数量</div>
+        <div class="bar"><i style="--w:48%"></i></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 数据总览 -->
+<section class="scene" id="overview">
+  <div class="wrap">
+    <div class="sec-title"><span class="num">01</span> 数据总览</div>
+    <div class="sec-sub">看清楚：哪些文书更愿意提供俄语，哪些仍停留在中文或中英文阶段。</div>
+
+    <div class="panels">
+      <div class="panel">
+        <h3>📊 各类文书俄语覆盖率</h3>
+        <div class="bars" id="bars"></div>
+      </div>
+      <div class="panel">
+        <h3>🎯 总体俄语可达率</h3>
+        <div class="ring" id="ring"><div class="ring-inner"><div><b id="ringNum">0%</b><br><span>含俄语样本占比</span></div></div></div>
+        <div class="mini-cards" style="margin-top:16px">
+          <div class="mini"><div class="k">仅中文</div><div class="v" id="kZh">0</div></div>
+          <div class="mini"><div class="k">中英双语</div><div class="v" id="kEn">0</div></div>
+          <div class="mini"><div class="k">中俄双语</div><div class="v" id="kRu">0</div></div>
+          <div class="mini"><div class="k">中英俄三语</div><div class="v" id="kAll">0</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 研究发现 -->
+<section class="scene" id="findings">
+  <div class="wrap">
+    <div class="sec-title"><span class="num">02</span> 研究发现</div>
+    <div class="sec-sub">每条结论都连接一张现场证据，点击卡片查看完整现象、理论解释与启示。</div>
+    <div class="findings" id="findings"></div>
+  </div>
+</section>
+
+<!-- 语料库 -->
+<section class="scene" id="corpus">
+  <div class="wrap">
+    <div class="sec-title"><span class="num">03</span> 语料库浏览</div>
+    <div class="sec-sub">所有采集到的原始文书样本，按类型、语种和位置整理，便于核验。</div>
+    <div class="filter-row" id="filterRow"></div>
+    <div class="corpus" id="corpus"></div>
+  </div>
+</section>
+
+<!-- 优化示例 -->
+<section class="scene" id="ba">
+  <div class="wrap">
+    <div class="sec-title"><span class="num">04</span> 优化示例</div>
+    <div class="sec-sub">对比现场原样与建议版本，看双语信息如何更清楚地呈现。</div>
+    <div class="ba" id="ba"></div>
+    <div class="nav-row">
+      <button id="baPrev">← 上一个</button>
+      <span id="baIndex" style="align-self:center;font-weight:800;color:var(--sea-deep)">1 / 1</span>
+      <button id="baNext">下一个 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- 方法 -->
+<section class="scene" id="method">
+  <div class="wrap">
+    <div class="sec-title"><span class="num">05</span> 调研方法与局限</div>
+    <div class="method">
+      <h3>调查方法</h3>
+      <p>本研究以三亚大悦城为调查地点，采用实地拍摄、文字转录和语料分类方法，采集文本文书类标识，包括海报告示、消费小票、便民服务提示和商品标签文书。</p>
+      <h3 style="margin-top:14px">语料编号规则</h3>
+      <p>编号格式为 DY-WS-XXX，其中 DY 代表三亚大悦城，WS 代表文本文书类，XXX 为序号。</p>
+      <h3 style="margin-top:14px">局限</h3>
+      <p>样本主要集中在三亚大悦城内部，结论更适用于大型商业综合体中的文书类双语现象，尚未覆盖其他商圈和服务场景。</p>
+    </div>
+  </div>
+</section>
+
+<footer>组员信息 · 指导教师 · 调研时间 · AI辅助翻译已人工审校 · 照片为本组现场拍摄</footer>
+
+<dialog id="dialog">
+  <div class="dialog-body" id="dialogBody"></div>
+</dialog>
+
+<script>
+const DATA = {
+  stats: { total: 48, ru: 12, zhOnly: 21, enBilingual: 11, ruBilingual: 4, trilingual: 2 },
+  overview: [
+    { name: "政策告示", total: 14, haveRu: 7 },
+    { name: "便民提示", total: 12, haveRu: 2 },
+    { name: "小票单据", total: 13, haveRu: 1 },
+    { name: "商品标签", total: 9, haveRu: 2 }
+  ],
+  findings: [
+    {
+      type: "good", title: "退税类告示更重视俄语信息覆盖",
+      scene: "政策告示", lens: "语言景观理论",
+      phenomenon: "商场内退税、优惠类海报更常出现俄语译文，说明涉外服务信息被优先多语化。",
+      evidenceId: "DY-WS-001", photo: "photos/DY-WS-001.jpg",
+      explain: "退税涉及境外游客直接利益，商场会优先配置多语文本，降低信息理解障碍。",
+      implication: "建议将退税、会员、活动类告示统一纳入中俄双语标配清单。"
+    },
+    {
+      type: "bad", title: "便民服务类提示普遍缺少俄语",
+      scene: "便民提示", lens: "场所语言供给理论",
+      phenomenon: "充电宝、冰水、卫生间指引等服务提示多为中文或中英文，俄语版本较少。",
+      evidenceId: "DY-WS-002", photo: "photos/DY-WS-002.jpg",
+      explain: "商场服务系统仍以中文使用者为默认对象，俄语未被纳入常规服务语言供给。",
+      implication: "高频服务提示应补充基础俄语译文，形成最低限度的双语服务包。"
+    },
+    {
+      type: "bad", title: "消费小票的俄语可达率最低",
+      scene: "小票单据", lens: "多语服务接触理论",
+      phenomenon: "消费小票多为中文或中英文混排，几乎没有专门面向俄语游客的译文。",
+      evidenceId: "DY-WS-003", photo: "photos/DY-WS-003.jpg",
+      explain: "小票被视为内部结算凭证，商场未将其视为游客服务信息的一部分。",
+      implication: "建议小票关键信息如金额、退税提示、退换货提示增加俄语短句。"
+    },
+    {
+      type: "good", title: "部分品牌商品标签出现多语说明",
+      scene: "商品标签", lens: "旅游多语服务理论",
+      phenomenon: "部分服装、配饰商品标签出现英文说明，少数样本附带俄语信息。",
+      evidenceId: "DY-WS-004", photo: "photos/DY-WS-004.jpg",
+      explain: "国际化品牌更倾向通过多语标签提升商品说明效率，俄语多出现在涉外品牌较强区域。",
+      implication: "商品标签可作为双语普及的重要补充场景。"
+    }
+  ],
+  corpus: [
+    { id: "DY-WS-001", photo: "photos/DY-WS-001.jpg", category: "政策告示", location: "1F 服务台附近", lang: "中英俄三语", zh: "退税政策说明", en: "Tax Refund Notice", ru: "Информация о возврате НДС", note: "俄语译文较完整" },
+    { id: "DY-WS-002", photo: "photos/DY-WS-002.jpg", category: "便民提示", location: "2F 走廊", lang: "仅中文", zh: "充电宝租借", en: "—", ru: "—", note: "缺少俄语" },
+    { id: "DY-WS-003", photo: "photos/DY-WS-003.jpg", category: "小票单据", location: "3F 餐饮店", lang: "中英混排", zh: "消费小票", en: "Receipt", ru: "—", note: "无俄语" },
+    { id: "DY-WS-004", photo: "photos/DY-WS-004.jpg", category: "商品标签", location: "1F 品牌店", lang: "中英俄三语", zh: "商品说明", en: "Product Description", ru: "Описание товара", note: "品牌自带多语标签" },
+    { id: "DY-WS-005", photo: "photos/DY-WS-005.jpg", category: "政策告示", location: "B1 超市入口", lang: "中英双语", zh: "优惠活动海报", en: "Promotion Poster", ru: "—", note: "无俄语" },
+    { id: "DY-WS-006", photo: "photos/DY-WS-006.jpg", category: "便民提示", location: "2F 休息区", lang: "中英双语", zh: "免费饮水点", en: "Free Water", ru: "—", note: "建议补充俄语" }
+  ],
+  beforeAfter: [
+    { id: "DY-WS-002", photo: "photos/DY-WS-002.jpg", now: "现场仅中文，俄语游客难以快速识别服务功能。", zh: "充电宝租借服务", en: "Power Bank Rental Service", ru: "Аренда пауэрбанка" },
+    { id: "DY-WS-003", photo: "photos/DY-WS-003.jpg", now: "小票以中文为主，关键消费信息缺少俄语提示。", zh: "消费凭证｜金额｜退税提示", en: "Receipt | Amount | Tax Refund Tip", ru: "Чек | Сумма | Возврат НДС" },
+    { id: "DY-WS-006", photo: "photos/DY-WS-006.jpg", now: "饮水点标识只有中文和英文，缺少俄语版本。", zh: "免费饮水点", en: "Free Water Station", ru: "Бесплатная вода" }
+  ]
+};
+
+const navBtns = document.querySelectorAll(".nav button");
+const scenes = document.querySelectorAll(".scene");
+const stageFill = document.getElementById("stageFill");
+const stageMap = { hero: 16, overview: 34, findings: 52, corpus: 70, ba: 86, method: 100 };
+
+navBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const target = btn.dataset.scene;
+    navBtns.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    scenes.forEach(s => s.classList.remove("active"));
+    document.getElementById(target).classList.add("active");
+    stageFill.style.width = stageMap[target] + "%";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+});
+
+// 数字动画
+function countUp(id, target, suffix = "") {
+  const el = document.getElementById(id);
+  let cur = 0;
+  const step = Math.max(1, Math.ceil(target / 30));
+  const timer = setInterval(() => {
+    cur += step;
+    if (cur >= target) { cur = target; clearInterval(timer); }
+    el.textContent = cur + suffix;
+  }, 30);
+}
+countUp("statTotal", DATA.stats.total);
+countUp("statRu", DATA.stats.ru);
+countUp("statFindings", DATA.findings.length);
+
+// 总览数据
+const pct = Math.round(DATA.stats.ru / DATA.stats.total * 100);
+document.getElementById("ring").style.setProperty("--p", pct * 3.6);
+setTimeout(() => {
+  document.getElementById("ringNum").textContent = pct + "%";
+  document.getElementById("kZh").textContent = DATA.stats.zhOnly;
+  document.getElementById("kEn").textContent = DATA.stats.enBilingual;
+  document.getElementById("kRu").textContent = DATA.stats.ruBilingual;
+  document.getElementById("kAll").textContent = DATA.stats.trilingual;
+}, 400);
+
+const bars = document.getElementById("bars");
+bars.innerHTML = DATA.overview.map(item => {
+  const v = item.total ? Math.round(item.haveRu / item.total * 100) : 0;
+  return `
+    <div class="row">
+      <div class="tag">${item.name}</div>
+      <div class="track"><div class="fill" data-w="${v}%"></div></div>
+      <div style="text-align:right;font-weight:800;color:var(--sea-deep)">${v}%</div>
+    </div>`;
+}).join("");
+setTimeout(() => {
+  document.querySelectorAll(".fill").forEach(el => el.style.width = el.dataset.w);
+}, 300);
+
+// 研究发现
+const findings = document.getElementById("findings");
+findings.innerHTML = DATA.findings.map((f, i) => `
+  <div class="fcard" data-i="${i}">
+    <div class="cover">
+      <img src="${f.photo}" alt="${f.title}" onerror="this.style.display='none'">
+      <span class="badge">${f.type === "good" ? "✅ 好做法" : "⚠️ 现存问题"}</span>
+    </div>
+    <div class="body">
+      <h4>${f.title}</h4>
+      <p>${f.phenomenon}</p>
+      <span class="chip">${f.evidenceId} · ${f.scene}</span>
+    </div>
+  </div>`).join("");
+findings.querySelectorAll(".fcard").forEach(card => {
+  card.addEventListener("click", () => {
+    const f = DATA.findings[card.dataset.i];
+    document.getElementById("dialogBody").innerHTML = `
+      <div class="dialog-img"><img src="${f.photo}" onerror="this.style.display='none'"></div>
+      <h3>${f.title}</h3>
+      <p style="color:var(--muted);margin-top:8px">${f.phenomenon}</p>
+      <div class="info-grid">
+        <div><b>类型</b>${f.type === "good" ? "好做法" : "问题"}</div>
+        <div><b>场景</b>${f.scene}</div>
+        <div><b>理论视角</b>${f.lens}</div>
+        <div><b>语料编号</b>${f.evidenceId}</div>
+        <div><b>解释</b>${f.explain}</div>
+        <div><b>启示</b>${f.implication}</div>
+      </div>
+      <button class="close" onclick="document.getElementById('dialog').close()">关闭</button>`;
+    document.getElementById("dialog").showModal();
+  });
+});
+
+// 语料库
+const filters = ["全部", "政策告示", "便民提示", "小票单据", "商品标签", "含有俄语"];
+document.getElementById("filterRow").innerHTML = filters.map((t, i) => `
+  <button class="${i === 0 ? "active" : ""}" data-f="${t}">${t}</button>`).join("");
+
+function renderCorpus(active) {
+  const list = active === "全部" ? DATA.corpus :
+    active === "含有俄语" ? DATA.corpus.filter(c => c.ru && c.ru !== "—") :
+    DATA.corpus.filter(c => c.category === active);
+  const html = DATA.corpus.map(c => {
+    const match = list.includes(c);
+    return `
+      <div class="ccard ${match ? "" : "hide"}" data-id="${c.id}">
+        <div class="ph"><img src="${c.photo}" alt="${c.id}" onerror="this.style.display='none'"></div>
+        <div class="meta">
+          <div style="font-weight:800;color:var(--sea-deep)">${c.id}</div>
+          <div class="row2"><span>${c.category}</span><span class="lang">${c.lang}</span></div>
+          <div style="color:var(--muted);font-size:13px;margin-top:6px">📍 ${c.location}</div>
+        </div>
+      </div>`;
+  }).join("");
+  document.getElementById("corpus").innerHTML = html;
+  document.querySelectorAll("#corpus .ccard").forEach(card => {
+    card.addEventListener("click", () => {
+      const c = DATA.corpus.find(x => x.id === card.dataset.id);
+      document.getElementById("dialogBody").innerHTML = `
+        <div class="dialog-img"><img src="${c.photo}" onerror="this.style.display='none'"></div>
+        <h3>${c.id}</h3>
+        <div class="info-grid">
+          <div><b>类别</b>${c.category}</div>
+          <div><b>位置</b>${c.location}</div>
+          <div><b>语种</b>${c.lang}</div>
+          <div><b>中文</b>${c.zh}</div>
+          <div><b>英文</b>${c.en}</div>
+          <div><b>俄语</b>${c.ru}</div>
+          <div><b>备注</b>${c.note}</div>
+        </div>
+        <button class="close" onclick="document.getElementById('dialog').close()">关闭</button>`;
+      document.getElementById("dialog").showModal();
+    });
+  });
+}
+renderCorpus("全部");
+document.querySelectorAll("#filterRow button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#filterRow button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    renderCorpus(btn.dataset.f);
+  });
+});
+
+// 优化示例
+let baIdx = 0;
+function renderBA() {
+  const it = DATA.beforeAfter[baIdx];
+  document.getElementById("ba").innerHTML = `
+    <div class="ba-col">
+      <div class="pic"><img src="${it.photo}" onerror="this.style.display='none'"></div>
+      <div class="txt">
+        <h4>现场原样 · ${it.id}</h4>
+        <p>${it.now}</p>
+      </div>
+    </div>
+    <div class="ba-col" style="background:linear-gradient(135deg,#EAF8FF,#FFF3E0)">
+      <div class="pic" style="display:flex;align-items:center;justify-content:center;padding:20px;text-align:center">
+        <div>
+          <div style="font-size:24px;font-weight:800;color:var(--sea-deep)">${it.zh}</div>
+          <div style="margin-top:10px;color:var(--ink)">${it.en}</div>
+          <div style="margin-top:8px;color:var(--coral);font-weight:700">${it.ru}</div>
+        </div>
+      </div>
+      <div class="txt">
+        <h4>建议优化版本</h4>
+        <ul><li>增加俄语译文，提升俄语游客识别效率</li><li>使用更醒目的标题层级</li><li>保留中英文信息，形成三语对照</li></ul>
+      </div>
+    </div>`;
+  document.getElementById("baIndex").textContent = `${baIdx + 1} / ${DATA.beforeAfter.length}`;
+}
+renderBA();
+document.getElementById("baPrev").addEventListener("click", () => { baIdx = (baIdx - 1 + DATA.beforeAfter.length) % DATA.beforeAfter.length; renderBA(); });
+document.getElementById("baNext").addEventListener("click", () => { baIdx = (baIdx + 1) % DATA.beforeAfter.length; renderBA(); });
+</script>
+</body>
+</html>
